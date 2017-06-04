@@ -28,7 +28,7 @@
 
   <groupId>org.gridkit.jvmtool</groupId>
   <artifactId>sjk-jfr-pom</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1</version>
   <name>${project.groupId}::${project.artifactId}</name>
   <description>Java Flight Recorder integration</description>
   <packaging>pom</packaging>
@@ -57,7 +57,7 @@
     <connection>scm:git:https://github.com/aragozin/sjk-jfr.git</connection>
     <developerConnection>scm:git:https://github.com/aragozin/sjk-jfr.git</developerConnection>
     <url>https://github.com/aragozin/sjk-jfr</url>
-    <tag>HEAD</tag>
+    <tag>sjk-jfr-pom-0.1</tag>
   </scm>
 
   <build>
