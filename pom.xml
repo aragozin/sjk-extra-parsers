@@ -27,14 +27,15 @@
   </parent>
 
   <groupId>org.gridkit.jvmtool</groupId>
-  <artifactId>sjk-jfr-pom</artifactId>
+  <artifactId>sjk-extra-parsers-pom</artifactId>
   <version>0.2-SNAPSHOT</version>
   <name>${project.groupId}::${project.artifactId}</name>
-  <description>Java Flight Recorder integration</description>
+  <description>Integration with JDK profilers</description>
   <packaging>pom</packaging>
 
   <modules>
     <module>sjk-jfr</module>
+    <module>sjk-nps</module>
   </modules>
 
   <licenses>

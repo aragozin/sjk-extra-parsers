@@ -2,7 +2,7 @@
 
 <!--
 
-    Copyright 2012 Alexey Ragozin
+    Copyright 2017 Alexey Ragozin
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,23 +27,21 @@
       <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>sjk-jfr</artifactId>
+    <artifactId>sjk-nps</artifactId>
     <name>${project.groupId}::${project.artifactId}</name>
-    <description>Java Flight Recorder Integration for SJK</description>
+    <description>VisualVM snapshot support for SJK</description>
     
     <properties>
       <!--
-        This module require Mission Control jars to compile.
-        Mission Control is avaialble as part of JDK8, though version may wary.
-        In addtion, SJK is build with JDK6, so referencing though ${java.home} will not work.
+        This module require VisualVM jars to compile.
+        VisualVM is avaialble as part of JDK, though version may wary.
         
-        You have to cofigure jmc.path and jmc.version properties in your settings.xml to build
+        You have to cofigure visualvm.path properties in your settings.xml to build
         this module. 
-        -->
-      <build.jmc.path>${jmc.path}</build.jmc.path>
-      <!-- e.g. C:/Program files/Java/jdk1.8.0_121/lib/missioncontrol -->
-      <build.jmc.version>${jmc.version}</build.jmc.version>
-      <!-- e.g  5.5.1.172852 -->
+        -->       
+      <build.visualvm.path_>${visualvm.path}</build.visualvm.path_>
+      <build.visualvm.path>C:/WarZone/WarPath/Java/jdk1.6.0_45_i586/lib/visualvm</build.visualvm.path>
+      <!-- e.g. C:/Program files/Java/jdk1.8.0_121/lib/visualvm -->
     </properties>
 
     <dependencies>
@@ -51,20 +49,27 @@
             <groupId>org.gridkit.jvmtool</groupId>
             <artifactId>sjk-stacktrace</artifactId>
             <version>0.6</version>
-        </dependency>
+        </dependency> 
         <dependency>
-            <groupId>com.jrockit.mc</groupId>
-            <artifactId>com.jrockit.mc.common</artifactId>
+            <groupId>jdk.org.netbeans</groupId>
+            <artifactId>profiler</artifactId>
             <version>PROVIDED</version>
             <scope>system</scope>
-            <systemPath>${build.jmc.path}/plugins/com.jrockit.mc.common_${build.jmc.version}.jar</systemPath>
+            <systemPath>${build.visualvm.path}/profiler/modules/org-netbeans-modules-profiler.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>com.jrockit.mc</groupId>
-            <artifactId>com.jrockit.mc.flightrecorder</artifactId>
+            <groupId>jdk.org.netbeans</groupId>
+            <artifactId>lib-profiler</artifactId>
             <version>PROVIDED</version>
             <scope>system</scope>
-            <systemPath>${build.jmc.path}/plugins/com.jrockit.mc.flightrecorder_${build.jmc.version}.jar</systemPath>
+            <systemPath>${build.visualvm.path}/profiler/modules/org-netbeans-lib-profiler.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>jdk.org.netbeans</groupId>
+            <artifactId>lib-profiler-common</artifactId>
+            <version>PROVIDED</version>
+            <scope>system</scope>
+            <systemPath>${build.visualvm.path}/profiler/modules/org-netbeans-lib-profiler-common.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -96,7 +101,7 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
-            <!-- JMC jar are 1.6 compatible so JDK8 is not required for build. This may change is future.
+            <!-- VisualVM jars are 1.6 compatible so JDK8 is not required for build. This may change is future.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-toolchains-plugin</artifactId>
