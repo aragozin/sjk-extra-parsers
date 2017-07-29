@@ -39,8 +39,7 @@
         You have to cofigure visualvm.path properties in your settings.xml to build
         this module. 
         -->       
-      <build.visualvm.path_>${visualvm.path}</build.visualvm.path_>
-      <build.visualvm.path>C:/WarZone/WarPath/Java/jdk1.6.0_45_i586/lib/visualvm</build.visualvm.path>
+      <build.visualvm.path>${visualvm.path}</build.visualvm.path>
       <!-- e.g. C:/Program files/Java/jdk1.8.0_121/lib/visualvm -->
     </properties>
 
@@ -56,6 +55,7 @@
             <version>PROVIDED</version>
             <scope>system</scope>
             <systemPath>${build.visualvm.path}/profiler/modules/org-netbeans-modules-profiler.jar</systemPath>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>jdk.org.netbeans</groupId>
@@ -63,6 +63,7 @@
             <version>PROVIDED</version>
             <scope>system</scope>
             <systemPath>${build.visualvm.path}/profiler/modules/org-netbeans-lib-profiler.jar</systemPath>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>jdk.org.netbeans</groupId>
@@ -70,6 +71,7 @@
             <version>PROVIDED</version>
             <scope>system</scope>
             <systemPath>${build.visualvm.path}/profiler/modules/org-netbeans-lib-profiler-common.jar</systemPath>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
