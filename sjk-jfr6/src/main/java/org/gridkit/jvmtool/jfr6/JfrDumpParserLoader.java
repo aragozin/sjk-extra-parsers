@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gridkit.jvmtool.nps;
+package org.gridkit.jvmtool.jfr6;
 
 import java.io.IOException;
 
@@ -21,12 +21,12 @@ import org.gridkit.jvmtool.event.Event;
 import org.gridkit.jvmtool.event.EventDumpParser;
 import org.gridkit.jvmtool.event.EventReader;
 
-public class NetbeansSnapshotParserLoader implements EventDumpParser {
+public class JfrDumpParserLoader implements EventDumpParser {
 
 	private static EventDumpParser PARSER;
 
 	static {
-		PARSER = new NetbeansSnapshotParserBootstrapper().load();
+		PARSER = new JfrDumpParserBootstrapper().load();
 	}
 	
 	public boolean isFunctional() {
@@ -43,6 +43,6 @@ public class NetbeansSnapshotParserLoader implements EventDumpParser {
 	
 	@Override
 	public String toString() {
-		return "Netbeans Profiler Snapshot" + (PARSER == null ? " (not loaded)" : "");
+		return "Java Flight Recorder (MC6)" + (PARSER == null ? " (not loaded)" : "");
 	}
 }

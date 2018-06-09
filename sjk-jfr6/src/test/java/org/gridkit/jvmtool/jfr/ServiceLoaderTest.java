@@ -13,45 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gridkit.jvmtool.nps;
+package org.gridkit.jvmtool.jfr;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ServiceLoader;
 
-import org.gridkit.jvmtool.event.Event;
 import org.gridkit.jvmtool.event.EventDumpParser;
-import org.gridkit.jvmtool.event.EventDumpParser.InputStreamSource;
-import org.gridkit.jvmtool.event.EventReader;
+import org.gridkit.jvmtool.jfr6.JfrDumpParserLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class ServiceLoaderTest {
 
 	@Test	
-	public void test_load() throws IOException {
-		
-		final File npsFile = new File("src/test/resources/hz1.nps");
-		Assert.assertTrue("hz1.nps should be present", npsFile.isFile());
+	public void test_load() {
 		
 		ServiceLoader<EventDumpParser> loader = ServiceLoader.load(EventDumpParser.class);
 		boolean found = false;
 		for(EventDumpParser edp: loader) {
-			if (edp instanceof NetbeansSnapshotParserLoader) {
+			if (edp instanceof JfrDumpParserLoader) {
 				found = true;
-				System.out.println(edp);
-				EventReader<Event> er = edp.open(new InputStreamSource() {
-					
-					@Override
-					public InputStream open() throws IOException {
-						return new FileInputStream(npsFile);
-					}
-				});
-				Assert.assertNotNull(er);
 			}
 		}
-		Assert.assertTrue("NetbeansSnapshotParserLoader should be listed", found);
+		Assert.assertTrue("JfrDumpParserLoader should be listed", found);
 	}
 }

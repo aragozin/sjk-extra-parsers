@@ -34,7 +34,8 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>sjk-jfr</module>
+    <module>sjk-jfr5</module>
+    <module>sjk-jfr6</module>
     <module>sjk-nps</module>
   </modules>
 

@@ -133,7 +133,9 @@ public class NetbeansSnapshotParserBootstrapper {
 		}
 
 		private boolean shouldLoad(String name) {
-			return name.startsWith(PARSER_PACKAGE) || name.startsWith("org.netbeans");
+			return name.startsWith(PARSER_PACKAGE) 
+					|| name.startsWith("org.netbeans")
+					|| name.startsWith("org.openide");
 		}
 	}
 	

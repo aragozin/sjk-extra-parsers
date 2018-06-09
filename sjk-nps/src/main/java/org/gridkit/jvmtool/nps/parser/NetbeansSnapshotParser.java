@@ -18,6 +18,7 @@ package org.gridkit.jvmtool.nps.parser;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.gridkit.jvmtool.event.Event;
 import org.gridkit.jvmtool.event.EventDumpParser;
@@ -31,7 +32,13 @@ public class NetbeansSnapshotParser implements EventDumpParser {
 	public NetbeansSnapshotParser() {
 		try {
 			// force class loading
-			LoadedSnapshot.loadSnapshot(new DataInputStream(new ByteArrayInputStream(new byte[0])));
+			open(new InputStreamSource() {
+				
+				@Override
+				public InputStream open() throws IOException {
+					return new ByteArrayInputStream(new byte[0]);
+				}
+			});
 		}
 		catch(Exception e) {
 			// ignore
@@ -43,9 +50,11 @@ public class NetbeansSnapshotParser implements EventDumpParser {
 	
 	@Override
 	public EventReader<Event> open(InputStreamSource source) throws IOException {
- 
-		try {
 
+		ClassLoader contextCl = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+			
 			LoadedSnapshot snapshot = LoadedSnapshot.loadSnapshot(new DataInputStream(source.open()));
 			ResultsSnapshot snap = snapshot.getSnapshot();
 			if (snap instanceof CPUResultsSnapshot) {
@@ -57,10 +66,15 @@ public class NetbeansSnapshotParser implements EventDumpParser {
 			}
 		}
 		catch(NoSuchMethodError e) {
+			e.printStackTrace();
 			// classpath problem
 		}
 		catch(NoClassDefFoundError e) {
-			// classpath problem
+			e.printStackTrace();
+			// classpath problem			
+		}
+		finally {
+			Thread.currentThread().setContextClassLoader(contextCl);
 		}
 		return null;
 	}
