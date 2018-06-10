@@ -29,6 +29,10 @@ import org.netbeans.modules.profiler.LoadedSnapshot;
 
 public class NetbeansSnapshotParser implements EventDumpParser {
 
+	public boolean isFunctional() {
+		return true;
+	}
+
 	public NetbeansSnapshotParser() {
 		try {
 			// force class loading
