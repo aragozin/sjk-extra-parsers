@@ -26,7 +26,7 @@
     <version>2</version>
   </parent>
 
-  <groupId>org.gridkit.jvmtool</groupId>
+  <groupId>org.perfkit.sjk.parsers</groupId>
   <artifactId>sjk-extra-parsers-pom</artifactId>
   <version>0.5-SNAPSHOT</version>
   <name>${project.groupId}::${project.artifactId}</name>
