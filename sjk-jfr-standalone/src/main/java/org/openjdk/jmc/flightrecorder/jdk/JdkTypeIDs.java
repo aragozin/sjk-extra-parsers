@@ -33,7 +33,6 @@
 package org.openjdk.jmc.flightrecorder.jdk;
 
 import org.openjdk.jmc.common.item.IType;
-import org.openjdk.jmc.common.item.ItemFilters;
 
 /**
  * Contains type IDs for events that are produced by JDK 11+. These strings can be compared to the
