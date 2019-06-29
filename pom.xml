@@ -2,7 +2,7 @@
   
 <!--
 
-    Copyright 2017 Alexey Ragozin
+    Copyright 2017-2019 Alexey Ragozin
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@
     <module>sjk-jfr5</module>
     <module>sjk-jfr6</module>
     <module>sjk-nps</module>
+    <module>sjk-jfr-standalone</module>
   </modules>
 
   <licenses>

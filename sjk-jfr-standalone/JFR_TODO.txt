@@ -1,0 +1,53 @@
+﻿jdk.CompilerInlining
+
+ - descripancies
+
+jdk.NativeMethodSample,jdk.ExecutionSample
+ 
+ - eventThread -> sampledThread
+
+jdk.ObjectAllocationInNewTLAB,jdk.ObjectCount
+
+ - primitive types naming mismatch (B[ native, byte[] MC)
+
+jdk.ClassLoad,jdk.ClassDefine,jdk.ClassLoaderStatistics
+
+ - classloader information descrepancies 
+
+jdk.ExecuteVMOperation,jdk.GCPhasePauseLevel2
+
+ - thread name descrepancies
+
+jdk.ThreadAllocationStatistics
+
+ - thread name descrepancies
+
+jdk.GCPhasePause
+ 
+ - missing in MC
+
+jdk.GCHeapSummary,jdk.MetaspaceSummary,jdk.G1EvacuationOldStatistics
+
+ - unparsed heapSpace stats in MC
+
+jdk.OldObjectSample
+
+ - missing root path in MC
+ - raw allocationTime in native
+
+jdk.ModuleExport,jdk.ModuleRequire
+
+ - module export details missing in MC
+
+jdk.CompilerPhase
+
+ - duration units missmatch (may be just event ordering)
+ - phase naming descrepancies
+
+jdk.JavaExceptionThrow
+
+ - missing frame in MC (misplace start/end timestamps?)
+
+other
+
+ - thread names enriched by MC sometimes

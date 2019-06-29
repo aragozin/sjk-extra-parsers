@@ -1,6 +1,9 @@
 package org.perfkit.sjk.jfr.mcparser;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.gridkit.jvmtool.util.json.JsonStreamWriter;
 import org.openjdk.jmc.common.IMCFrame;
@@ -18,19 +21,66 @@ import org.openjdk.jmc.common.unit.TimestampUnit;
 
 public class JsonEventAdapter {
 
+	private final int maxDepth;
+
+	private Set<String> whiteList;
+	private Set<String> blackList;
+	
+	public JsonEventAdapter() {
+		this(Integer.MAX_VALUE);
+	}
+
+	public JsonEventAdapter(int maxDepth) {
+		this.maxDepth = maxDepth;
+	}
+	
+	public void setWhiteList(Collection<String> events) {
+		whiteList = new HashSet<String>(events);
+	}
+	
+	public void setBlackList(Collection<String> events) {
+		blackList = new HashSet<String>(events);
+	}
+
 	public void encodeEvent(IItem event, JsonStreamWriter writer) throws IOException {
 		writer.writeStartObject();
 		try {
-			writer.writeStringField("eventType", event.getType().getIdentifier());
-			encodeObject(event, writer);			
+			String eventType = event.getType().getIdentifier();
+			if (shouldOutput(eventType)) {
+				writer.writeStringField("eventType", event.getType().getIdentifier());
+				encodeObject(event, writer, 1);
+			}
 		}
 		finally {
 			writer.writeEndObject();
 		}
 	}
+	
+	private boolean shouldOutput(String eventType) {
+		if (whiteList != null && !whiteList.contains(eventType)) {
+			return false;
+		}
+		if (blackList != null && blackList.contains(eventType)) {
+			return false;
+		}
+		return true;
+	}
 
+	private boolean checkDepthLimit(JsonStreamWriter writer, int depth) throws IOException {
+		if (depth > maxDepth) {
+			writer.writeStringField("json_depth_limit_reached", "!");
+			return false; 
+		}
+		else {
+			return true;
+		}		
+	}
+	
 	@SuppressWarnings("rawtypes")
-	private void encodeObject(IItem obj, JsonStreamWriter writer) throws IOException {
+	private void encodeObject(IItem obj, JsonStreamWriter writer, int depth) throws IOException {
+		if (!checkDepthLimit(writer, depth)) {
+			return;
+		}
 		ITypedQuantity startTime = null;
 		for(IAccessorKey<?> k: obj.getType().getAccessorKeys().keySet()) {
 			String name = k.getIdentifier();
@@ -50,17 +100,17 @@ public class JsonEventAdapter {
 					}
 				}
 				writer.writeFieldName(name);
-				encodeValue(val, writer);
+				encodeValue(val, writer, depth);
 			}
 		}
 	}
 	
-	private void encodeFieldValue(String field, Object val, JsonStreamWriter writer) throws IOException {
+	private void encodeFieldValue(String field, Object val, JsonStreamWriter writer, int depth) throws IOException {
 		writer.writeFieldName(field);
-		encodeValue(val, writer);
+		encodeValue(val, writer, depth);
 	}
 	
-	private void encodeValue(Object val, JsonStreamWriter writer) throws IOException {
+	private void encodeValue(Object val, JsonStreamWriter writer, int depth) throws IOException {
  		if (val == null) {
 			writer.writeNull();
 		}
@@ -81,10 +131,12 @@ public class JsonEventAdapter {
 			IMCThread thread = (IMCThread) val;
 			writer.writeStartObject();
 			try {
-				writer.writeNumberField("osThreadId", thread.hashCode()); // hack for MC API
-				writer.writeStringField("javaName", thread.getThreadName());
-				encodeFieldValue("javaThreadId", thread.getThreadId(), writer);
-				encodeFieldValue("group", thread.getThreadGroup(), writer);
+				if (checkDepthLimit(writer, depth)) {
+					writer.writeNumberField("osThreadId", thread.hashCode()); // hack for MC API
+					writer.writeStringField("javaName", thread.getThreadName());
+					encodeFieldValue("javaThreadId", thread.getThreadId(), writer, depth + 1);
+					encodeFieldValue("group", thread.getThreadGroup(), writer, depth + 1);
+				}
 			}
 			finally {
 				writer.writeEndObject();
@@ -94,8 +146,10 @@ public class JsonEventAdapter {
 			IMCThreadGroup tg = (IMCThreadGroup)val;
 			writer.writeStartObject();
 			try {
-				encodeFieldValue("parent", tg.getParent(), writer);
-				writer.writeStringField("name", tg.getName());
+				if (checkDepthLimit(writer, depth)) {
+					encodeFieldValue("parent", tg.getParent(), writer, depth + 1);
+					writer.writeStringField("name", tg.getName());
+				}
 			}
 			finally {
 				writer.writeEndObject();
@@ -105,16 +159,18 @@ public class JsonEventAdapter {
 			IMCStackTrace trace = (IMCStackTrace)val;
 			writer.writeStartObject();
 			try {
-				writer.writeBooleanField("truncated", trace.getTruncationState().isTruncated());
-				writer.writeFieldName("frames");
-				writer.writeStartArray();
-				try {
-					for(IMCFrame frame: trace.getFrames()) {
-						encodeValue(frame, writer);
-					}					
-				}
-				finally {
-					writer.writeEndArray();
+				if (checkDepthLimit(writer, depth)) {
+					writer.writeBooleanField("truncated", trace.getTruncationState().isTruncated());
+					writer.writeFieldName("frames");
+					writer.writeStartArray();
+					try {					
+						for(IMCFrame frame: trace.getFrames()) {
+							encodeValue(frame, writer, depth + 2);
+						}					
+					}
+					finally {
+						writer.writeEndArray();
+					}
 				}
 			}
 			finally {
@@ -125,10 +181,12 @@ public class JsonEventAdapter {
 			IMCFrame frame = (IMCFrame) val;
 			writer.writeStartObject();
 			try {
-				encodeFieldValue("method", frame.getMethod(), writer);
-				encodeFieldValue("lineNumber", frame.getFrameLineNumber(), writer);
-				encodeFieldValue("bytecodeIndex", frame.getBCI(), writer);
-				encodeFieldValue("type", frameType(frame.getType()), writer);
+				if (checkDepthLimit(writer, depth)) {
+					encodeFieldValue("method", frame.getMethod(), writer, depth + 1);
+					encodeFieldValue("lineNumber", frame.getFrameLineNumber(), writer, depth + 1);
+					encodeFieldValue("bytecodeIndex", frame.getBCI(), writer, depth + 1);
+					encodeFieldValue("type", frameType(frame.getType()), writer, depth + 1);
+				}
 			}
 			finally {
 				writer.writeEndObject();
@@ -137,7 +195,7 @@ public class JsonEventAdapter {
 		else if (val instanceof IMCMethod) {
 			IMCMethod method = (IMCMethod) val;
 			writer.writeStartObject();
-			try {
+			try {				
 				writer.writeStringField("class", method.getType().getFullName());
 				writer.writeStringField("method", method.getMethodName());
 			}
