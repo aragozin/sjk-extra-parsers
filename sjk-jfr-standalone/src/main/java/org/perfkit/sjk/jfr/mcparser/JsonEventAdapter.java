@@ -25,7 +25,7 @@ public class JsonEventAdapter {
 
 	private Set<String> whiteList;
 	private Set<String> blackList;
-	
+
 	public JsonEventAdapter() {
 		this(Integer.MAX_VALUE);
 	}
@@ -33,29 +33,33 @@ public class JsonEventAdapter {
 	public JsonEventAdapter(int maxDepth) {
 		this.maxDepth = maxDepth;
 	}
-	
+
 	public void setWhiteList(Collection<String> events) {
 		whiteList = new HashSet<String>(events);
 	}
-	
+
 	public void setBlackList(Collection<String> events) {
 		blackList = new HashSet<String>(events);
 	}
 
-	public void encodeEvent(IItem event, JsonStreamWriter writer) throws IOException {
-		writer.writeStartObject();
-		try {
-			String eventType = event.getType().getIdentifier();
-			if (shouldOutput(eventType)) {
+	public boolean encodeEvent(IItem event, JsonStreamWriter writer) throws IOException {
+		String eventType = event.getType().getIdentifier();
+		if (shouldOutput(eventType)) {
+			writer.writeStartObject();
+			try {
 				writer.writeStringField("eventType", event.getType().getIdentifier());
 				encodeObject(event, writer, 1);
 			}
+			finally {
+				writer.writeEndObject();
+			}
+			return true;
 		}
-		finally {
-			writer.writeEndObject();
+		else {
+		    return false;
 		}
 	}
-	
+
 	private boolean shouldOutput(String eventType) {
 		if (whiteList != null && !whiteList.contains(eventType)) {
 			return false;
@@ -69,13 +73,13 @@ public class JsonEventAdapter {
 	private boolean checkDepthLimit(JsonStreamWriter writer, int depth) throws IOException {
 		if (depth > maxDepth) {
 			writer.writeStringField("json_depth_limit_reached", "!");
-			return false; 
+			return false;
 		}
 		else {
 			return true;
-		}		
+		}
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	private void encodeObject(IItem obj, JsonStreamWriter writer, int depth) throws IOException {
 		if (!checkDepthLimit(writer, depth)) {
@@ -99,17 +103,25 @@ public class JsonEventAdapter {
 						val = ((Number)val).longValue() - ((Number)startTime).longValue();
 					}
 				}
+				else if ("eventThread".equals(name) && isThreadSample(obj)) {
+					name = "sampledThread";
+				}
 				writer.writeFieldName(name);
 				encodeValue(val, writer, depth);
 			}
 		}
 	}
-	
+
+	private boolean isThreadSample(IItem obj) {
+		String type = obj.getType().getIdentifier();
+		return "jdk.NativeMethodSample".equals(type) || "jdk.ExecutionSample".equals(type);
+	}
+
 	private void encodeFieldValue(String field, Object val, JsonStreamWriter writer, int depth) throws IOException {
 		writer.writeFieldName(field);
 		encodeValue(val, writer, depth);
 	}
-	
+
 	private void encodeValue(Object val, JsonStreamWriter writer, int depth) throws IOException {
  		if (val == null) {
 			writer.writeNull();
@@ -163,10 +175,10 @@ public class JsonEventAdapter {
 					writer.writeBooleanField("truncated", trace.getTruncationState().isTruncated());
 					writer.writeFieldName("frames");
 					writer.writeStartArray();
-					try {					
+					try {
 						for(IMCFrame frame: trace.getFrames()) {
 							encodeValue(frame, writer, depth + 2);
-						}					
+						}
 					}
 					finally {
 						writer.writeEndArray();
@@ -195,7 +207,7 @@ public class JsonEventAdapter {
 		else if (val instanceof IMCMethod) {
 			IMCMethod method = (IMCMethod) val;
 			writer.writeStartObject();
-			try {				
+			try {
 				writer.writeStringField("class", method.getType().getFullName());
 				writer.writeStringField("method", method.getMethodName());
 			}
@@ -207,7 +219,7 @@ public class JsonEventAdapter {
 			IMCType type = (IMCType) val;
 			writer.writeStartObject();
 			try {
-				// TODO add JFR11 classloader and module info				
+				// TODO add JFR11 classloader and module info
 				writer.writeStringField("className", type.getFullName());
 			}
 			finally {
@@ -224,14 +236,14 @@ public class JsonEventAdapter {
 			writer.writeString(val.toString());
 		}
 	}
-	
+
 	private String frameType(Type type) {
 		switch(type) {
 			case JIT_COMPILED: return "JIT compiled";
 			case INLINED: return "Inlined";
 			case INTERPRETED: return "Interpreted";
-			default: return "Native"; // TODO Native Vs. Unknown 
-		}		
+			default: return "Native"; // TODO Native Vs. Unknown
+		}
 	}
 
 	@SuppressWarnings("unchecked")
