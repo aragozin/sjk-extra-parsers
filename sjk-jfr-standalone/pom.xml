@@ -68,7 +68,7 @@
                 </configuration>
             </plugin>
 
-            <!-- VisualVM jars are 1.6 compatible so JDK8 is not required for build. This may change is future.
+            <!-- Mission Control code requires 1.8 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-toolchains-plugin</artifactId>
@@ -89,7 +89,6 @@
                   </toolchains>
                 </configuration>
             </plugin>
-              -->
         </plugins>
     </build>
 </project>

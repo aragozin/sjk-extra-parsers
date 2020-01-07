@@ -98,7 +98,13 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
-            <!-- JMC jar are 1.6 compatible so JDK8 is not required for build. This may change is future.
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <!-- Java 1.6 compatible -->
+                <version>2.10.4</version>                 
+            </plugin>
+            <!-- JMC jar are 1.6 compatible -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-toolchains-plugin</artifactId>
@@ -113,13 +119,12 @@
                 <configuration>
                   <toolchains>
                      <jdk>
-                        <version>1.8</version>
-                        <vendor>oracle</vendor>
+                        <version>1.6</version>
+                        <vendor>sun</vendor>
                      </jdk>
                   </toolchains>
                 </configuration>
             </plugin>
-              -->
         </plugins>
     </build>
 </project>
