@@ -27,6 +27,7 @@ import org.gridkit.jvmtool.codec.stacktrace.ThreadSnapshotEvent;
 import org.gridkit.jvmtool.event.Event;
 import org.gridkit.jvmtool.event.EventDumpParser;
 import org.gridkit.jvmtool.event.EventDumpParser.InputStreamSource;
+import org.gridkit.jvmtool.nps.parser.DirectNpsEventAdapter;
 import org.gridkit.jvmtool.event.EventReader;
 import org.gridkit.jvmtool.stacktrace.StackFrame;
 import org.gridkit.jvmtool.stacktrace.StackFrameList;
@@ -35,57 +36,62 @@ import org.junit.Test;
 
 public class ServiceLoaderTest {
 
-	@Test
-	public void test_load() throws IOException {
+    @Test
+    public void test_load() throws IOException {
 
-		final File npsFile = new File("src/test/resources/crypto.nps");
-		Assert.assertTrue("hz1.nps should be present", npsFile.isFile());
+        final File npsFile = new File("src/test/resources/crypto.nps");
+        Assert.assertTrue("hz1.nps should be present", npsFile.isFile());
 
-		ServiceLoader<EventDumpParser> loader = ServiceLoader.load(EventDumpParser.class);
-		boolean found = false;
-		for(EventDumpParser edp: loader) {
-			if (edp instanceof NetbeansSnapshotParserLoader) {
-				found = true;
-				System.out.println(edp);
-				EventReader<Event> er = edp.open(new InputStreamSource() {
+        ServiceLoader<EventDumpParser> loader = ServiceLoader.load(EventDumpParser.class);
+        boolean found = false;
+        for(EventDumpParser edp: loader) {
+            if (edp instanceof NetbeansSnapshotParserLoader) {
+                found = true;
+                System.out.println(edp);
+                EventReader<Event> er = edp.open(new InputStreamSource() {
 
-					@Override
-					public InputStream open() throws IOException {
-						return new FileInputStream(npsFile);
-					}
-				});
-				Assert.assertNotNull(er);
-				histo(er);
-			}
-		}
-		Assert.assertTrue("NetbeansSnapshotParserLoader should be listed", found);
-	}
+                    @Override
+                    public InputStream open() throws IOException {
+                        return new FileInputStream(npsFile);
+                    }
+                });
+                Assert.assertNotNull(er);
+                histo(er);
+            }
+        }
+        Assert.assertTrue("NetbeansSnapshotParserLoader should be listed", found);
+    }
 
-	private void histo(EventReader<Event> er) {
-		Map<String, Integer> histo = new TreeMap<String, Integer>();
-		for (Event evt: er) {
-			ThreadSnapshotEvent te = (ThreadSnapshotEvent) evt;
-			String path = "";
-			for(StackFrame sf: te.stackTrace()) {
-				path = sf.getMethodName() + "/" + path;
-			}
-			if (histo.containsKey(path)) {
-				histo.put(path, histo.get(path) + 1);
-			}
-			else {
-				histo.put(path, 1);
-			}
-		}
+    private void histo(EventReader<Event> er) {
+        Map<String, Long> histo = new TreeMap<String, Long>();
+        for (Event evt: er) {
+            ThreadSnapshotEvent te = (ThreadSnapshotEvent) evt;
+            String path = "";
+            for(StackFrame sf: te.stackTrace()) {
+                path = sf.getMethodName() + "/" + path;
+            }
+            long w = te.counters().getValue(DirectNpsEventAdapter.NODE_WEIGHT);
+            if (w < 0) {
+                w = 1;
+            }
+            if (histo.containsKey(path)) {
+                histo.put(path, histo.get(path) + w);
+            }
+            else {
+                histo.put(path, w);
+            }
+        }
 
-		for(Map.Entry<String, Integer> e: histo.entrySet()) {
-			System.out.println(String.format("%-40s - %d", e.getKey(), e.getValue()));
-		}
-	}
+        for(Map.Entry<String, Long> e: histo.entrySet()) {
+            System.out.println(String.format("%-40s - %d", e.getKey(), e.getValue()));
+        }
+    }
 
-	private void print(StackFrameList stackTrace) {
-		System.out.println("\n--");
-		for(StackFrame sf: stackTrace) {
-			System.out.println(sf);
-		}
-	}
+    @SuppressWarnings("unused")
+    private void print(StackFrameList stackTrace) {
+        System.out.println("\n--");
+        for(StackFrame sf: stackTrace) {
+            System.out.println(sf);
+        }
+    }
 }

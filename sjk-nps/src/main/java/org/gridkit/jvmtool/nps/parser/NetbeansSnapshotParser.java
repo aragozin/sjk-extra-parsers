@@ -29,57 +29,58 @@ import org.netbeans.modules.profiler.LoadedSnapshot;
 
 public class NetbeansSnapshotParser implements EventDumpParser {
 
-	public boolean isFunctional() {
-		return true;
-	}
+    public boolean isFunctional() {
+        return true;
+    }
 
-	public NetbeansSnapshotParser() {
-		try {
-			// force class loading
-			open(new InputStreamSource() {
-				
-				@Override
-				public InputStream open() throws IOException {
-					return new ByteArrayInputStream(new byte[0]);
-				}
-			});
-		}
-		catch(Exception e) {
-			// ignore
-		}
-		catch(Error e) {
-			// ignore
-		}
-	}
-	
-	@Override
-	public EventReader<Event> open(InputStreamSource source) throws IOException {
+    public NetbeansSnapshotParser() {
+        try {
+            // force class loading
+            open(new InputStreamSource() {
 
-		ClassLoader contextCl = Thread.currentThread().getContextClassLoader();
-		try {
-			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-			
-			LoadedSnapshot snapshot = LoadedSnapshot.loadSnapshot(new DataInputStream(source.open()));
-			ResultsSnapshot snap = snapshot.getSnapshot();
-			if (snap instanceof CPUResultsSnapshot) {
-				NpsEventAdapter adapter = new NpsEventAdapter((CPUResultsSnapshot) snap);
-				if (!adapter.hasNext()) {
-					return null;
-				}				
-				return adapter;
-			}
-		}
-		catch(NoSuchMethodError e) {
-			e.printStackTrace();
-			// classpath problem
-		}
-		catch(NoClassDefFoundError e) {
-			e.printStackTrace();
-			// classpath problem			
-		}
-		finally {
-			Thread.currentThread().setContextClassLoader(contextCl);
-		}
-		return null;
-	}
+                @Override
+                public InputStream open() throws IOException {
+                    return new ByteArrayInputStream(new byte[0]);
+                }
+            });
+        }
+        catch(Exception e) {
+            // ignore
+        }
+        catch(Error e) {
+            // ignore
+        }
+    }
+
+    @Override
+    public EventReader<Event> open(InputStreamSource source) throws IOException {
+
+        ClassLoader contextCl = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
+            LoadedSnapshot snapshot = LoadedSnapshot.loadSnapshot(new DataInputStream(source.open()));
+            ResultsSnapshot snap = snapshot.getSnapshot();
+            if (snap instanceof CPUResultsSnapshot) {
+                EventReader<Event> adapter = new DirectNpsEventAdapter((CPUResultsSnapshot) snap);
+//                EventReader<Event> adapter = new NpsEventAdapter((CPUResultsSnapshot) snap);
+                if (!adapter.hasNext()) {
+                    return null;
+                }
+                return adapter;
+            }
+        }
+        catch(NoSuchMethodError e) {
+            e.printStackTrace();
+            // classpath problem
+        }
+        catch(NoClassDefFoundError e) {
+            e.printStackTrace();
+            // classpath problem
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(contextCl);
+        }
+        return null;
+    }
 }
